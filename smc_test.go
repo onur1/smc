@@ -37,9 +37,9 @@ func TestBasicChunked(t *testing.T) {
 }
 
 type expected struct {
-	ch uint64
-	k  uint64
-	d  []byte
+	id   uint64
+	ch   uint64
+	data []byte
 }
 
 func TestTwoMessagesChunked(t *testing.T) {
@@ -53,9 +53,9 @@ func TestTwoMessagesChunked(t *testing.T) {
 
 		e, xs = xs[0], xs[1:]
 
-		assert.EqualValues(t, id, e.ch)
-		assert.EqualValues(t, ch, e.k)
-		assert.EqualValues(t, d, e.d)
+		assert.EqualValues(t, id, e.id)
+		assert.EqualValues(t, ch, e.ch)
+		assert.EqualValues(t, d, e.data)
 	}
 
 	a := smc.NewSMC(smc.WithMessageHandler(onmessage))
@@ -94,9 +94,9 @@ func TestTwoBigMessagesChunked(t *testing.T) {
 
 		e, xs = xs[0], xs[1:]
 
-		assert.EqualValues(t, id, e.ch)
-		assert.EqualValues(t, ch, e.k)
-		assert.EqualValues(t, d, e.d)
+		assert.EqualValues(t, id, e.id)
+		assert.EqualValues(t, ch, e.ch)
+		assert.EqualValues(t, d, e.data)
 	}
 
 	a := smc.NewSMC(smc.WithMessageHandler(onmessage))
