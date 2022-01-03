@@ -18,7 +18,7 @@ var (
 	n9 = uint64(math.Pow(2, 63))
 )
 
-func encodingLength(i uint64) uint64 {
+func encodingLength(i uint64) int {
 	if i < n1 {
 		return 1
 	} else if i < n2 {
@@ -76,7 +76,6 @@ func NewSMC(opts ...SMCOption) *SMC {
 	s := &SMC{
 		factor: 1,
 	}
-
 	for _, o := range opts {
 		o(s)
 	}
@@ -211,10 +210,10 @@ func (s *SMC) readMessage(data []byte, offset int) int {
 
 func (s *SMC) Send(id int, ch rune, data []byte) []byte {
 	header := uint64(id)<<4 | uint64(ch)
-	length := uint64(len(data)) + encodingLength(header)
+	length := len(data) + encodingLength(header)
 	payload := make([]byte, encodingLength(uint64(length))+length)
 
-	n := binary.PutUvarint(payload, length)
+	n := binary.PutUvarint(payload, uint64(length))
 	n += binary.PutUvarint(payload[n:], header)
 
 	copy(payload[n:], data)
@@ -271,7 +270,7 @@ func NewMessage(id int, ch rune, data []byte) *Message {
 func (s *SMC) SendBatch(items []*Message) []byte {
 	offset := 0
 
-	var length uint64
+	var length int
 
 	for _, v := range items {
 		// 16 is >= the max size of the varints
@@ -282,7 +281,7 @@ func (s *SMC) SendBatch(items []*Message) []byte {
 
 	for _, v := range items {
 		header := uint64(v.ID<<4) | uint64(v.Channel)
-		l := uint64(len(v.Data)) + encodingLength(header)
+		l := uint64(len(v.Data) + encodingLength(header))
 
 		offset += binary.PutUvarint(payload[offset:], l)
 		offset += binary.PutUvarint(payload[offset:], header)
