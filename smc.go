@@ -255,9 +255,17 @@ func (s *SMC) Recv(d []byte) bool {
 }
 
 type Message struct {
-	Chan uint64
-	Cmd  uint8
-	Data []byte
+	ID      int
+	Channel rune
+	Data    []byte
+}
+
+func NewMessage(id int, ch rune, data []byte) *Message {
+	return &Message{
+		ID:      id,
+		Channel: ch,
+		Data:    data,
+	}
 }
 
 func (s *SMC) SendBatch(items []*Message) []byte {
@@ -273,7 +281,7 @@ func (s *SMC) SendBatch(items []*Message) []byte {
 	payload := make([]byte, length)
 
 	for _, v := range items {
-		header := v.Chan<<4 | uint64(v.Cmd)
+		header := uint64(v.ID<<4) | uint64(v.Channel)
 		l := uint64(len(v.Data)) + encodingLength(header)
 
 		offset += binary.PutUvarint(payload[offset:], l)
