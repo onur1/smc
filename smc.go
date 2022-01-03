@@ -80,8 +80,14 @@ func NewSMC(opts ...SMCOption) *SMC {
 	for _, o := range opts {
 		o(s)
 	}
-
 	return s
+}
+
+func (s *SMC) Error() error {
+	err := s.err
+	s.err = nil
+
+	return err
 }
 
 func (s *SMC) destroy(err error) {
