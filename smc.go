@@ -55,7 +55,7 @@ type SMC struct {
 	consumed  int
 	err       error
 	onmissing func(int)
-	onmessage func(uint64, uint8, []byte, []byte, int)
+	onmessage func(int, rune, []byte, []byte, int)
 }
 
 type SMCOption = func(*SMC)
@@ -66,7 +66,7 @@ func WithMissingHandler(f func(int)) SMCOption {
 	}
 }
 
-func WithMessageHandler(f func(uint64, uint8, []byte, []byte, int)) SMCOption {
+func WithMessageHandler(f func(int, rune, []byte, []byte, int)) SMCOption {
 	return func(s *SMC) {
 		s.onmessage = f
 	}
@@ -138,7 +138,7 @@ func (s *SMC) next(data []byte, offset int) bool {
 		s.state = 0
 
 		if s.onmessage != nil {
-			s.onmessage(s.header>>4, uint8(s.header&0b1111), s.message, data, offset)
+			s.onmessage(int(s.header>>4), rune(s.header&0b1111), s.message, data, offset)
 		}
 
 		s.message = nil
@@ -209,15 +209,15 @@ func (s *SMC) readMessage(data []byte, offset int) int {
 	return l
 }
 
-func (s *SMC) Send(ch uint64, k uint8, d []byte) []byte {
-	header := ch<<4 | uint64(k)
-	length := uint64(len(d)) + encodingLength(header)
+func (s *SMC) Send(id int, ch rune, data []byte) []byte {
+	header := uint64(id)<<4 | uint64(ch)
+	length := uint64(len(data)) + encodingLength(header)
 	payload := make([]byte, encodingLength(uint64(length))+length)
 
 	n := binary.PutUvarint(payload, length)
 	n += binary.PutUvarint(payload[n:], header)
 
-	copy(payload[n:], d)
+	copy(payload[n:], data)
 
 	return payload
 }
