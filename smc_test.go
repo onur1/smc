@@ -9,9 +9,9 @@ import (
 )
 
 func TestBasic(t *testing.T) {
-	onmessage := func(ch uint64, k uint8, d []byte, _ []byte, _ int) {
-		assert.EqualValues(t, ch, 0)
-		assert.EqualValues(t, k, 1)
+	onmessage := func(id int, ch rune, d []byte, _ []byte, _ int) {
+		assert.EqualValues(t, id, 0)
+		assert.EqualValues(t, ch, 1)
 		assert.EqualValues(t, d, []byte("hi"))
 	}
 
@@ -21,9 +21,9 @@ func TestBasic(t *testing.T) {
 }
 
 func TestBasicChunked(t *testing.T) {
-	onmessage := func(ch uint64, k uint8, d []byte, _ []byte, _ int) {
-		assert.EqualValues(t, ch, 0)
-		assert.EqualValues(t, k, 1)
+	onmessage := func(id int, ch rune, d []byte, _ []byte, _ int) {
+		assert.EqualValues(t, id, 0)
+		assert.EqualValues(t, ch, 1)
 		assert.EqualValues(t, d, []byte("hi"))
 	}
 
@@ -48,13 +48,13 @@ func TestTwoMessagesChunked(t *testing.T) {
 		{42, 3, []byte("hey")},
 	}
 
-	onmessage := func(ch uint64, k uint8, d []byte, _ []byte, _ int) {
+	onmessage := func(id int, ch rune, d []byte, _ []byte, _ int) {
 		var e expected
 
 		e, xs = xs[0], xs[1:]
 
-		assert.EqualValues(t, ch, e.ch)
-		assert.EqualValues(t, k, e.k)
+		assert.EqualValues(t, id, e.ch)
+		assert.EqualValues(t, ch, e.k)
 		assert.EqualValues(t, d, e.d)
 	}
 
@@ -89,13 +89,13 @@ func TestTwoBigMessagesChunked(t *testing.T) {
 		{42, 3, magicByteArray(2e5)},
 	}
 
-	onmessage := func(ch uint64, k uint8, d []byte, _ []byte, _ int) {
+	onmessage := func(id int, ch rune, d []byte, _ []byte, _ int) {
 		var e expected
 
 		e, xs = xs[0], xs[1:]
 
-		assert.EqualValues(t, ch, e.ch)
-		assert.EqualValues(t, k, e.k)
+		assert.EqualValues(t, id, e.ch)
+		assert.EqualValues(t, ch, e.k)
 		assert.EqualValues(t, d, e.d)
 	}
 
@@ -115,9 +115,9 @@ func TestTwoBigMessagesChunked(t *testing.T) {
 }
 
 func TestEmptyMessage(t *testing.T) {
-	onmessage := func(ch uint64, k uint8, d []byte, _ []byte, _ int) {
+	onmessage := func(id int, ch rune, d []byte, _ []byte, _ int) {
+		assert.EqualValues(t, id, 0)
 		assert.EqualValues(t, ch, 0)
-		assert.EqualValues(t, k, 0)
 		assert.EqualValues(t, d, []byte{})
 	}
 
@@ -127,9 +127,9 @@ func TestEmptyMessage(t *testing.T) {
 }
 
 func TestChunkMessageIsCorrect(t *testing.T) {
-	onmessage := func(ch uint64, k uint8, d []byte, _ []byte, _ int) {
-		assert.EqualValues(t, ch, 0)
-		assert.EqualValues(t, k, 1)
+	onmessage := func(id int, ch rune, d []byte, _ []byte, _ int) {
+		assert.EqualValues(t, id, 0)
+		assert.EqualValues(t, ch, 1)
 		assert.EqualValues(t, d, []byte("aaaaaaaaaa"))
 	}
 
@@ -143,9 +143,9 @@ func TestChunkMessageIsCorrect(t *testing.T) {
 
 	batch := b.SendBatch([]*smc.Message{
 		{
-			Chan: 0,
-			Cmd:  1,
-			Data: []byte("aaaaaaaaaa"),
+			ID:      0,
+			Channel: 1,
+			Data:    []byte("aaaaaaaaaa"),
 		},
 	})
 
